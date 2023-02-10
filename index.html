@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Timer</title>
+  </head>
+  <body>
+    <button id="countButton">Start Counting</button>
+    <div id="countDisplay"></div>
+    <button id="resetButton">reset history</button>
+  </body>
+  <script>
+    const countButton = document.getElementById("countButton");
+    const resetButton = document.getElementById("resetButton");
+    const countDisplay = document.getElementById("countDisplay");
+    let count = parseInt(localStorage.getItem("count")) || 0;
+    let countInterval;
+    let timeStamps = JSON.parse(localStorage.getItem("timeStamps")) || [];
+    const historyList = document.createElement("div");
+    historyList.innerHTML = "Time stamp history:<br>";
+    document.body.appendChild(historyList);
+
+    countButton.addEventListener("click", function() {
+      clearInterval(countInterval);
+      const date = new Date();
+      timeStamps.push({ date: date.toLocaleString(), time: formatTime(count) });
+      localStorage.setItem("timeStamps", JSON.stringify(timeStamps));
+      count = 0;
+      localStorage.setItem("count", count);
+
+      // Update the history div with the new time stamp
+      historyList.innerHTML = "Time stamp history:<br>";
+      for (let i = 0; i < timeStamps.length; i++) {
+        historyList.innerHTML += (i + 1) + ") " + timeStamps[i].date + " = " + timeStamps[i].time + "<br>";
+      }
+
+      countInterval = setInterval(function() {
+        count++;
+        localStorage.setItem("count", count);
+        countDisplay.innerHTML = formatTime(count);
+      }, 1000);
+    });
+
+    resetButton.addEventListener("click", function() {
+      timeStamps = [];
+      localStorage.setItem("timeStamps", JSON.stringify(timeStamps));
+
+      // Update the history div with an empty history
+      historyList.innerHTML = "Time stamp history:<br>";
+    });
+
+    function formatTime(timeInSeconds) {
+      const seconds = timeInSeconds;
+      const minutes = timeInSeconds / 60;
+      const hours = timeInSeconds / 3600;
+      const days = timeInSeconds / 86400;
+      const weeks = timeInSeconds / 604800;
+
+      let timeString = "";
+      if (weeks >= 1) {
+        timeString += Math.floor(weeks) + "w ";
+        timeInSeconds = timeInSeconds % 604800;
+      }
+      if (days >= 1) {
+        timeString += Math.floor(days) + "d ";
+        timeInSeconds = timeInSeconds % 86400;
+      }
+      if (hours >= 1) {
+        timeString += Math.floor(hours) + "h ";
+        timeInSeconds = timeInSeconds % 3600;
+      }
+      if (minutes >= 1) {
+        timeString += Math.floor(minutes) + "m ";
+        timeInSeconds = timeInSeconds % 60;
+      }
+      timeString += timeInSeconds + "s";
+
+      return timeString;
+    }
+    countDisplay.innerHTML = formatTime(count);
+  </script>
+</html>
+
+<!-- pseudocode points
+a button that starts counting
+display a countdown
+a button that stops and saves record and restarts counting
+and a stop button 
+a show history link tab and display time and length
+-->
